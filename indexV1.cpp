@@ -1,5 +1,6 @@
 #include<iostream>
 #include<list>
+#include<cstdarg>
 using namespace std;
 
 class Card{
@@ -40,7 +41,7 @@ class Card{
             return response;
         };
         string Get_dis_kind_and_value(){
-            return (this->kind)+to_string(this->value);
+            return (this->kind)+"\t"+to_string(this->value);
         };
 };
 class Desktop{
@@ -69,6 +70,7 @@ class Desktop{
                         if(it->Get_info()==source.Get_info())break;
                         m.push_back(*it);
                     }
+                    it++;
                     for(;it!=s.end();it++){
                         m.push_back(*it);
                     }
@@ -82,6 +84,10 @@ class Desktop{
                 };
                 Card Draw(){
                     srand(time(0));
+                    if(this->Run_out()){
+                        Card un = Card("Run_out","Run_out",-1,-1);
+                        return un;
+                    }
                     int target = rand()%(this->Get_Deck_leng());
                     list<Card>::iterator it;
                     Card tmp;
@@ -97,6 +103,12 @@ class Desktop{
                 };
                 list<Card> Draw(int x){
                     srand(time(0));
+                    if(this->Run_out()){
+                        Card un = Card("Run_out","Run_out",-1,-1);
+                        list<Card> r;
+                        r.push_back(un);
+                        return r;
+                    }
                     list<Card>::iterator it;
                     list<Card> res;
                     Card tmp;
@@ -112,6 +124,13 @@ class Desktop{
                     }
                     return res;  
                 };
+                list<Card> Get_Center_Deck(){
+                    return this->Cards;
+                };
+                bool Run_out(){
+                    if(this->Get_Deck_leng()>0)return false;
+                    return true;
+                };
         };
         class DICE{
             public:
@@ -124,30 +143,6 @@ class Desktop{
                     return (rand()%(6*x))+1;
                 };
         };
-        class display_desktop{
-            private:
-                list<Card> user_drop;
-                string view_engine;
-            public:
-                display_desktop(int total_slove){
-                    list<Card>::iterator it;
-                    this->view_engine="";
-                    int i=1;
-                    for(it=this->user_drop.begin();it!=this->user_drop.end();it++,i++){
-                        this->view_engine+=(it->Get_dis_kind_and_value()+" ");
-                        if(i==5){
-                            this->view_engine+="\n";
-                            i=1;
-                        }
-                    }
-                };
-                void show(){
-                    cout<<"=============="<<endl;
-                    cout<<this->view_engine<<endl;
-                    cout<<"=============="<<endl;
-                };
-        };
-        
     public:
         Desktop(){
 
@@ -213,6 +208,45 @@ class user{
                         }
                     }
                 };
+                Card Handle_drop(string s){
+                    list<Card>::iterator it;
+                    Card tmp;
+                    for(it=this->Cards.begin();it!=this->Cards.end();it++){
+                        if(it->Get_dis_kind_and_value()==s){
+                            tmp = *it;
+                            this->Cards = this->remove_this(this->Cards,tmp);
+                            break;
+                        }
+                    }
+                    return tmp;
+                };
+                Card Handle_drop(int n){
+                    list<Card>::iterator it;
+                    Card tmp;
+                    for(it=this->Cards.begin();it!=this->Cards.end();it++){
+                        if(it->Get_rank()==n){
+                            tmp = *it;
+                            this->Cards = this->remove_this(this->Cards,tmp);
+                            break;
+                        }
+                    }
+                    return tmp;
+                };
+                list<Card> Handles_drop(list<string> s){
+                    list<string>::iterator it;
+                    list<Card>::iterator iit;
+                    list<Card>response;
+                    for(it=s.begin();it!=s.end();it++){
+                        for(iit = this->Cards.begin();iit!=this->Cards.end();iit++){
+                            if(*it==iit->Get_dis_kind_and_value()){
+                                response.push_back(*iit);
+                                this->Cards = this->remove_this(this->Cards,*iit);
+                                break;
+                            }
+                        }
+                    }
+                    return response;
+                };
                 list<Card> Get_handle(){
                     return this->Cards;
                 };
@@ -257,6 +291,7 @@ class user{
         void watch_handle(){
             list<Card> tmp = this->handles.Get_handle();
             list<Card>::iterator it;
+            cout<<"== "<<this->name<<" handle =="<<endl;
             for(it=tmp.begin();it!=tmp.end();it++){
                 cout<<it->Get_kind()<<" "<<it->Get_value()<<endl;
             }
@@ -287,21 +322,198 @@ class user{
             return this->handles.Get_handle();
         };
 };
+class Rule{
+    private:
+        class winner{
+            private:
+                list<int> purpose;
+                list<user> finish_order;
+            public:
+                winner(){};
+                winner(int size, ...){
+                    va_list args;
+                    va_start(args,size);
+                    for(int i=0;i<size;i++){
+                        this->purpose.push_back(va_arg(args,int));
+                    }
+                    va_end(args);
+                };
+                void when_user_finish(user users){
+                    this->finish_order.push_back(users);
+                };
+                bool Is_that_win(int total_Value){
+                    list<int>::iterator it;
+                    for(it=this->purpose.begin();it!=this->purpose.end();it++){
+                        if(total_Value==*it)return true;
+                    }
+                    return false;
+                };
+                bool Is_that_win(list<Card> handles){
+                    list<Card>::iterator it;
+                    list<int>::iterator iit;
+                    int sum=0;
+                    for(it=handles.begin();it!=handles.end();it++){
+                        sum+=it->Get_value();
+                    }
+                    for(iit=this->purpose.begin();iit!=this->purpose.end();it++){
+                        if(sum==*iit)return true;
+                    }
+                    return false;
+                };
+        };
+        class loser{
+            private:
+                list<int> purpose;
+                list<user> lose_order;
+            public:
+                loser(){
+                    
+                };
+                loser(int size, ...){
+                    va_list args;
+                    va_start(args,size);
+                    for(int i=0;i<size;i++){
+                        this->purpose.push_back(va_arg(args,int));
+                    }
+                    va_end(args);
+                };
+                void when_user_lost(user users){
+                    this->lose_order.push_back(users);
+                };
+                bool Is_that_lost(int total_value){
+                    list<int>::iterator it;
+                    for(it=this->purpose.begin();it!=this->purpose.end();it++){
+                        if(*it == total_value)return true;
+                    }
+                    return false;
+                };
+                bool Is_that_lost(list<Card> handle_drop){
+                    int total_value = 0;
+                    list<Card>::iterator it;
+                    list<int>::iterator iit;
+                    for(it=handle_drop.begin();it!=handle_drop.end();it++){
+                        total_value += it->Get_value();
+                    }
+                    for(iit=this->purpose.begin();iit!=this->purpose.end();iit++){
+                        if(total_value==*iit)return true;
+                    }
+                    return false;
+                };
+        };
+        winner WIN;
+        loser LOSE;
+    public:
+        Rule(){
+        };
+        Rule(string s){
+            if(s=="Black Jack"){
+                this->WIN = winner(1,21);
+                this->LOSE = loser(1,22,23,24,25,26,27,28,29,30);
+            }
+        };
+        void Process_step_state(user u,list<Card> handle_drop){
+            if(this->LOSE.Is_that_lost(handle_drop)){
+                this->LOSE.when_user_lost(u);
+            }else if(this->WIN.Is_that_win(handle_drop)){
+                this->WIN.when_user_finish(u);
+            }
+            //dynamic splices;
+        };
+};
 class Router{
     private:
+        Rule rule;
         Desktop desk;
+        int turn;
         class Game{
             private:
                 string Game_mode;
+                Rule Game_Rule;
+                int turn;
+                bool finish;
             public:
                 Game(){
 
                 };
                 Game(string s){
                     this->Game_mode = s;
+                    this->turn=1;
+                    this->finish=false;
+                    cout<<"[Router] > Now playing ["<<this->Game_mode<<"]"<<endl;
+                };
+                void load(){
+                    if(this->Game_mode=="Black Jack"){
+                        this->Game_Rule = Rule(this->Game_mode);
+                    }
+                };
+                int Get_turn(){
+                    return this->turn;
+                };
+                void Update_turn(int x){
+                    this->turn = x;
+                };
+                void move(user u){
+                    
+                };
+                Rule Get_Rule(){
+                    return this->Game_Rule;
+                };
+                void Update(Rule R){
+                    this->Game_Rule = R;
+                };
+                bool Get_finish(){
+                    return this->finish;
                 };
         };
+        class Display{
+            private:
+                class Display_Show{
+                    private:
+                        list<user> users;
+                        int turn;
+                        int total_slots;
+                    public:
+                        Display_Show(){
+
+                        };
+                        Display_Show(list<user> u,int tn,int ts){
+                            this->turn = tn;
+                            this->users = u;
+                            this->total_slots = ts;
+                        };
+                        void Personal_Handle(user u){//func(user u)
+                            list<Card> H;
+                            list<Card>::iterator it;
+                            cout<<"Round: "<<this->turn<<endl;
+                            cout<<"== "<<u.Get_name()<<" Handle =="<<endl;
+                            H = u.Get_handle();
+                            for(it=H.begin();it!=H.end();it++){
+                                cout<<"\t"<<it->Get_dis_kind_and_value()<<endl;
+                            }
+                            cout<<"=== End Of Line ==="<<endl;
+                        };
+                        void All_Player_Handle(list<user> u){//func(list<user> x)
+                            list<user>::iterator it;
+                            for(it=u.begin();it!=u.end();it++){
+                                this->Personal_Handle(*it);
+                            }
+                        };
+                        void Desktop(list<Card> deck_drop){
+                            system("clear");
+                            cout<<"Round: "<<this->turn<<endl;
+                            cout<<"===== Desktop Display ====="<<endl;
+                            cout<<"======= End Of Line ======="<<endl;
+                            
+                        };
+                };
+                class _Get{
+
+                };
+            public:
+                
+        };
         int total_slots;
+        bool Game_Finish;
         list<user> users;
         list<user> __user_config_(){
             string name;
@@ -395,6 +607,8 @@ class Router{
         };
         Router(string s){
             if(s=="start"){
+                this->Game_Finish = false;
+                this->turn=-1;
                 system("clear");
                 cout<<"**SYSTEM**"<<endl;
                 cout<<"Control Center --> On line"<<endl;
@@ -433,18 +647,54 @@ class Router{
         list<user> Get_player(){
             return this->users;
         };
-        void licen(int initial_num){
+        void licen(int initial_num){//only when initiation Game use
             list<user>::iterator r_it;
             for(r_it=this->users.begin();r_it!=this->users.end();r_it++){
                 r_it->push_handle(this->desk.center_deck.Draw(initial_num));
-            }           
+            }
         };
-        void start(){
-
+        void licen(user u,int n){
+            u.push_handle(this->desk.center_deck.Draw(n));
+        };
+        void licen(user u){
+            u.push_handle(this->desk.center_deck.Draw(1));
+        };
+        void show_players_handles(){
+            list<user>::iterator it;
+            list<Card> ahandlers;
+            list<Card>::iterator iit;
+            cout<<"==Player Handles=="<<endl;
+            for(it=this->users.begin();it!=this->users.end();it++){
+                ahandlers = it->Get_handle();
+                cout<<it->Get_name()<<": "<<endl;
+                for(iit=ahandlers.begin();iit!=ahandlers.end();iit++){
+                    cout<<"\t"<<iit->Get_dis_kind_and_value()<<endl;
+                }
+            }
+            cout<<"==End Of Line=="<<endl;
+        };
+        void show_center_deck(){
+            list<Card> arr;
+            list<Card>::iterator it;
+            arr = this->desk.center_deck.Get_Center_Deck();
+            cout<<"==Center Deck=="<<endl;
+            for(it=arr.begin();it!=arr.end();it++){
+                cout<<it->Get_dis_kind_and_value()<<endl;
+            }
+            cout<<"==End Of Line=="<<endl;
         };
         void start(string Game_mode){
             Game game_process = Game(Game_mode);
-
+            game_process.load();
+            this->rule=game_process.Get_Rule();
+            this->turn=game_process.Get_turn();
+            list<user>::iterator user_it;
+            while(this->Game_Finish==false){
+                user_it=this->users.begin();
+                for(int i=0;i<this->total_slots;i++,user_it++){
+                    //user view
+                }
+            }
         };
 };
 class Control_Center{
