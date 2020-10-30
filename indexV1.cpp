@@ -49,6 +49,32 @@ class Desktop{
         class Deck{
             private:
                 list<Card> Cards;
+                class player_drop{
+                    private:
+                        list<Card> Cards;
+                        string name;
+                        int turn;
+                    public:
+                        player_drop(){
+                            
+                        };
+                        player_drop(list<Card> handle,string user_name,int what_time){
+                            this->Cards = handle;
+                            this->name = user_name;
+                            this->turn = what_time;
+                        };
+                        list<Card> Get_Drop_what(){
+                            return this->Cards;
+                        };
+                        int Get_Drop_Time(){
+                            return this->turn;
+                        };
+                        string Get_Drop_user(){
+                            return this->name;
+                        };
+                };
+                
+                list<player_drop> LOG;
             public:
                 Deck(){
                     string kind[4]={"Spade","Heart","Club","Dianmond"};
@@ -186,27 +212,40 @@ class user{
                         this->Cards.push_back(*it);
                     }
                 };
-                bool drop_this(Card x){
+                list<Card> drop_this(Card x){
                     list<Card>::iterator it;
+                    list<Card> response;
                     for(it=this->Cards.begin();it!=this->Cards.end();it++){
                         if(it->Get_info()==x.Get_info()){
+                            response.push_back(*it);
                             this->Cards=this->remove_this(this->Cards,*it);
-                            return true;
+                            return response;
                         }
                     }
-                    return false;
+                    Card c = Card();
+                    response.push_back(c);
+                    return response;
                 };
-                void drop_this(list<Card> x){
+                list<Card> drop_this(list<Card> x){
                     list<Card>::iterator it;
                     list<Card>::iterator x_it;
+                    list<Card> response;
+                    bool find=false;
                     for(x_it=x.begin();x_it!=x.end();x_it++){
                         for(it=this->Cards.begin();it!=this->Cards.end();it++){
                             if(it->Get_info()==x_it->Get_info()){
+                                response.push_back(*it);
                                 this->Cards=this->remove_this(this->Cards,*it);
+                                find = true;
                                 break;
                             }
                         }
                     }
+                    if(find==false){
+                        Card scscscs;
+                        response.push_back(scscscs);
+                    }
+                    return response;
                 };
                 Card Handle_drop(string s){
                     list<Card>::iterator it;
@@ -467,16 +506,16 @@ class Router{
         };
         class Display{
             private:
-                class Display_Show{
+                class Show{
                     private:
                         list<user> users;
                         int turn;
                         int total_slots;
                     public:
-                        Display_Show(){
+                        Show(){
 
                         };
-                        Display_Show(list<user> u,int tn,int ts){
+                        Show(list<user> u,int tn,int ts){
                             this->turn = tn;
                             this->users = u;
                             this->total_slots = ts;
@@ -501,16 +540,34 @@ class Router{
                         void Desktop(list<Card> deck_drop){
                             system("clear");
                             cout<<"Round: "<<this->turn<<endl;
+                            list<Card>::iterator it;
                             cout<<"===== Desktop Display ====="<<endl;
+                            int i=0;
+                            for(it=deck_drop.begin();it!=deck_drop.end();it++,i++){
+                                cout<<it->Get_dis_kind_and_value()<<"\t";
+                                if(i%3==0){
+                                    cout<<endl;
+                                    i=0;
+                                }
+                            }
                             cout<<"======= End Of Line ======="<<endl;
-                            
                         };
                 };
-                class _Get{
-
-                };
+                Show SHOW;
             public:
-                
+                Display(){
+                    
+                };
+                void Personal_handle(user u){
+                    this->SHOW.Personal_Handle(u);
+                };
+                void ALL_PLAYER(list<user> u){
+                    this->SHOW.All_Player_Handle(u);
+                };
+                void Desktop(list<Card> deck){
+                    this->Desktop(deck);
+                };
+
         };
         int total_slots;
         bool Game_Finish;
