@@ -323,10 +323,6 @@ class user{
         void drop_this(list<Card> x){
             this->handles.drop_this(x);
         };
-        void drop_this(string s){
-            //split string
-            
-        };
         void watch_handle(){
             list<Card> tmp = this->handles.Get_handle();
             list<Card>::iterator it;
@@ -552,6 +548,20 @@ class Router{
                             }
                             cout<<"======= End Of Line ======="<<endl;
                         };
+                        void PLAYER_LIST_SERVIVE(list<user> u){
+                            list<user>::iterator it;
+                            cout<<"Servive: ";
+                            int i=0;
+                            for(it=u.begin();it!=u.end();it++,i++){
+                                cout<<it->Get_name()<<"\t";
+                                if(i%3==0){
+                                    cout<<endl;
+                                    i=0;
+                                }
+                            }
+                            cout<<endl;
+                            cout<<"===== End Of Line ====="<<endl;
+                        };
                 };
                 Show SHOW;
             public:
@@ -561,13 +571,19 @@ class Router{
                 void Personal_handle(user u){
                     this->SHOW.Personal_Handle(u);
                 };
-                void ALL_PLAYER(list<user> u){
+                void ALL_PLAYER_Handle(list<user> u){
                     this->SHOW.All_Player_Handle(u);
+                };
+                void PLAYER_LIST_SERVIVE(list<user> u){
+                    
                 };
                 void Desktop(list<Card> deck){
                     this->Desktop(deck);
                 };
-
+                void Main_Viewr(list<user> users,user u,int turn){
+                    cout<<"Round: "<<turn<<endl;
+                    this->PLAYER_LIST_SERVIVE(users);
+                };
         };
         int total_slots;
         bool Game_Finish;
@@ -675,22 +691,7 @@ class Router{
             }
         }
         void user_move(user thisuser){
-            string op;
-            bool esclicp=false;
-            do{
-                cout<<"next move?"<<endl;
-                cin>>op;
-                if(op=="n"){
-                    esclicp=true;
-                }else if(op=="message"){
-                    thisuser.speak();
-                }else if(op=="drop"){
-                    string select_card;
-                    getline(cin,select_card);
-                    thisuser.drop_this(select_card);
-                }
-                system("clear");// maybe different on windows
-            }while(esclicp==true);
+            //something to do
         };
         void player_list(){
             list<user>::iterator it;
@@ -740,17 +741,18 @@ class Router{
             }
             cout<<"==End Of Line=="<<endl;
         };
-        void start(string Game_mode){
+        void start(string Game_mode){ 
             Game game_process = Game(Game_mode);
             game_process.load();
             this->rule=game_process.Get_Rule();
             this->turn=game_process.Get_turn();
             list<user>::iterator user_it;
             while(this->Game_Finish==false){
-                user_it=this->users.begin();
-                for(int i=0;i<this->total_slots;i++,user_it++){
-                    //user view
+                if(turn>100)break;
+                for(user_it=this->users.begin();user_it!=this->users.end();user_it++){
+
                 }
+                this->turn++;
             }
         };
 };
