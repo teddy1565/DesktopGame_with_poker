@@ -199,6 +199,12 @@ class user{
         int Get_queue(){
             return this->queue;
         };
+        void Push_Handle(list<Card> C){
+            this->handles.Add_handle(C);
+        };
+        void Push_Handle(Card C){
+            this->handles.Add_handle(C);
+        };
 };
 class Desktop{
     private:
@@ -312,12 +318,144 @@ class Desktop{
         };
         tools tool;
 };
-class Control_Center{
+class IPC{
+    private:
+        list<user> users;
+        int turn;
+        int total_slots;
+        Desktop desktop;
     public:
-        Control_Center(){};
+        IPC(){
+            
+        };
+        IPC(list<user> userss,int turns,int total_slotss,Desktop desktops){
+            this->users = userss;
+            this->turn = turns;
+            this->total_slots = total_slotss;
+            this->desktop = desktops;
+        };
+        list<user> Get_users(){
+            return this->users;
+        };
+        int Get_turn(){
+            return this->turn;
+        };
+        int Get_total_slots(){
+            return this->total_slots;
+        };
+        Desktop Get_Desktop(){
+            return this->desktop;
+        };
+        void Update_information(list<user> u){
+            this->users = u;
+        };
+        void Update_information(int turnx){
+            this->turn = turnx;
+        };
+        void Update_information(Desktop d){
+            this->desktop = d;
+        };
+        void Update_information(list<user> U,int x,Desktop d){
+            this->users = U;
+            this->desktop = d;
+            this->turn = x;
+        };
+};
+class Control_Center{
+    private:
+        class Game_Program{
+            public:
+                bool Black_Jack_Judge(list<Card> c){
+                    list<Card>::iterator it;
+                    int sumA=0;
+                    int sumB=0;
+                    for(it=c.begin();it!=c.end();it++){
+                        int n = it->Get_value();
+                        n = n>10?10:n;
+                        sumA+=n;
+                    }
+                    for(it=c.begin();it!=c.end();it++){
+                        int n = it->Get_value();
+                        n = n>10?10:n;
+                        n = n==1?11:n;
+                        sumB+=n;
+                    }
+                    if(sumA>21&&sumB>21)return false;
+                    return true;
+                };
+                bool Black_Jack_Win(list<Card> c){
+                    int SUM = this->Black_Jack_Sum(c);
+                    if(SUM==21)return true;
+                    return false;
+                };
+                bool Black_Jack_Five_Card(list<Card> c){
+                    list<Card>::iterator it;
+                    int Card_length=0;
+                    int Sum=0;
+                    int SumA=0;
+                    int SumB=0;
+                    for(it=c.begin();it!=c.end();it++,Card_length++){
+                        int n = it->Get_value();
+                        n = n>10?10:n;
+                        SumA+=n;
+                    }
+                    for(it=c.begin();it!=c.end();it++){
+                        int n = it->Get_value();
+                        n = n>10?10:n;
+                        n = n==1?11:n;
+                        SumB+=n;
+                    }
+                    Sum = SumB>21?SumA:SumB;
+                    if(Sum>21)return false;
+                    else if(Card_length<5)return false;
+                    return true;
+                };
+                int Black_Jack_Sum(list<Card> c){
+                    list<Card>::iterator it;
+                    int sumA=0;
+                    int sumB=0;
+                    int SUM=0;
+                    for(it=c.begin();it!=c.end();it++){
+                        int n=it->Get_value();
+                        n = n>10?10:n;
+                        sumA+=n;
+                    }
+                    for(it=c.begin();it!=c.end();it++){
+                        int n=it->Get_value();
+                        n = n>10?10:n;
+                        n = n==1?11:n;
+                        sumB+=n;
+                    }
+                    SUM = sumB>21?sumA:sumB;
+                    return SUM;
+                };
+                bool Black_Jack_Double_Place(list<Card> c){
+                    list<Card>::iterator it;
+                    int Card_length=0;
+                    for(it=c.begin();it!=c.end();it++,Card_length++);
+                    int SUM = this->Black_Jack_Sum(c);
+                    if(SUM!=11)return false;
+                    return true;
+                };
+        };
+        Game_Program Game_Process;
+    public:
+        Control_Center(){
+
+        };
+        IPC Black_Jack(IPC Game_data){
+            list<user> users = Game_data.Get_users();
+            int turn = Game_data.Get_turn();
+            int total_slots = Game_data.Get_total_slots();
+            Desktop desktop = Game_data.Get_Desktop();
+            //game main
+            IPC res;
+            return res;
+        };
 };
 class Router{
     private:
+        IPC Game_Data;
         Control_Center CONTROL;
         list<user> users;
         int turn;
@@ -391,6 +529,7 @@ class Router{
                 this->users = update;
             }
             this->users = response;
+            this->Game_Data = IPC(this->users,this->turn,this->total_slots,this->desktop);
         };
         void Ready(){
             system("clear");
