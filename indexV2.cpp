@@ -293,6 +293,19 @@ class Desktop{
                 }
             }
         };
+        void Show_throw_card(){
+            list<throw_cards>::iterator it;
+            cout<<"===== Throw Area ====="<<endl;
+            for(it = this->trow_area.begin();it!=this->trow_area.end();it++){
+                list<Card> cards = it->Get_Cards();
+                list<Card>::iterator iit;
+                cout<<"===== Split Line ====="<<endl;
+                for(iit=cards.begin();iit!=cards.end();iit++){
+                    cout<<iit->Get_info()<<endl;
+                }
+            }
+            cout<<"===== End Of Line ====="<<endl;
+        };
         void Recevie_Card(user who,list<Card> s){
             throw_cards TMP = throw_cards(s,who);
             this->trow_area.push_back(TMP);
@@ -543,7 +556,17 @@ class Router{
             cout<<"======== End Of Line ========"<<endl;
         };
         void Load(string s){
-            
+            if(s=="Black_Jack"){
+                this->CONTROL.Black_Jack(this->Game_Data);
+            }
+        };
+        void Load(){
+            cout<<"Please select games"<<endl;
+            string games;
+            cin>>games;
+            if(games=="Black_Jack"){
+                this->CONTROL.Black_Jack(this->Game_Data);
+            }
         };
 };
 
@@ -551,5 +574,6 @@ int main(){
     Router r;
     r.Build();
     r.Ready();
+    r.Load();
     return 0;
 }
