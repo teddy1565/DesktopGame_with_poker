@@ -159,7 +159,6 @@ class user{
         void show_handle(){
             list<Card> handleTmp = this->handles.Get_handles();
             list<Card>::iterator it;
-            system("clear");
             cout<<"====== Handles =====";
             for(it=handleTmp.begin();it!=handleTmp.end();it++){
                 cout<<it->Get_info()<<endl;
@@ -204,6 +203,9 @@ class user{
         };
         void Push_Handle(Card C){
             this->handles.Add_handle(C);
+        };
+        list<Card> Get_Handles(){
+            return this->handles.Get_handles();
         };
 };
 class Desktop{
@@ -461,6 +463,85 @@ class Control_Center{
             int turn = Game_data.Get_turn();
             int total_slots = Game_data.Get_total_slots();
             Desktop desktop = Game_data.Get_Desktop();
+            bool finish = false;
+            list<user>::iterator lic_it;
+            list<user> winner;
+            list<user> loser;
+            for(lic_it=users.begin();lic_it!=users.end();lic_it++){
+                lic_it->Push_Handle(desktop.licen(2));
+            }
+            do{
+                list<user>::iterator it;
+                for(it=users.begin();it!=users.end();it++){
+                    system("clear");
+                    int select=0;
+                    do{
+                        cout<<"======= Round: "<<turn<<" ======="<<endl;
+                        cout<<"======= "<<it->Get_name()<<" Turn ======="<<endl;
+                        it->show_handle();
+                        cout<<"Select your move:"<<endl;
+                        cout<<"\t1. Bid"<<endl;
+                        cout<<"\t2. Pass"<<endl;
+                        cout<<"\t3. Clear monitor"<<endl;
+                        if(this->Game_Process.Black_Jack_Double_Place(it->Get_Handles())){
+                            cout<<"\t4. Double Place"<<endl;
+                        }
+                        cin>>select;
+                        select%=5;
+                        if(select==3){
+                            system("clear");
+                            select=0;
+                        }else if(select==1){
+                            it->Pull_Handle(desktop.licen(1));
+                            if(this->Game_Process.Black_Jack_Judge(it->Get_Handles())==false){
+                                system("clear");
+                                select = 2;
+                                loser.push_back(*it);
+                            }else if(this->Game_Process.Black_Jack_Five_Card(it->Get_Handles())==true){
+                                system("clear");
+                                winner.push_back(*it);
+                                select = 2;
+                            }else if(this->Game_Process.Black_Jack_Sum(it->Get_Handles())==21){
+                                system("clear");
+                                winner.push_back(*it);
+                                select = 2;
+                            }
+                        }else if(select==2){
+                            break;
+                        }
+                    }while(select==0);
+                }
+                user TMP;
+                for(it=users.begin();it!=users.end();it++){
+                    if(this->Game_Process.Black_Jack_Sum(it->Get_Handles())>21)continue;
+                    else if(this->Game_Process.Black_Jack_Five_Card(it->Get_Handles())==true)continue;
+                    else if(this->Game_Process.Black_Jack_Sum(it->Get_Handles())==21)continue;
+                    if(this->Game_Process.Black_Jack_Sum(it->Get_Handles())>this->Game_Process.Black_Jack_Sum(TMP.Get_Handles())){
+                        TMP = *it;
+                    }
+                }
+                winner.push_back(TMP);
+                list<user>::iterator iiit;
+                for(it=users.begin();it!=users.end();it++){
+                    bool find=false;
+                    for(iiit=winner.begin();iiit!=winner.end();iiit++){
+                        if(iiit->Get_name()==it->Get_name()){
+                            find=true;
+                            break;
+                        }
+                    }
+                    for(iiit=loser.begin();iiit!=loser.end();iiit++){
+                        if(iiit->Get_name()==it->Get_name()){
+                            find=true;
+                            break;
+                        }
+                    }
+                    if(find==false){
+                        loser.push_back(*it);
+                    }
+                }
+                finish = true;
+            }while(finish==false);
             //game main
             IPC res;
             return res;
@@ -474,6 +555,7 @@ class Router{
         int turn;
         int total_slots;
         Desktop desktop;
+        string Games;
     public:
         Router(){};
         void Build(){
@@ -557,7 +639,7 @@ class Router{
         };
         void Load(string s){
             if(s=="Black_Jack"){
-                this->CONTROL.Black_Jack(this->Game_Data);
+                this->Games=s;
             }
         };
         void Load(){
@@ -565,6 +647,11 @@ class Router{
             string games;
             cin>>games;
             if(games=="Black_Jack"){
+                this->Games = games;
+            }
+        };
+        void start(){
+            if(this->Games=="Black_Jack"){
                 this->CONTROL.Black_Jack(this->Game_Data);
             }
         };
